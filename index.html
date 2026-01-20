@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パターンオーダー AIシミュレーター | OUC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans JP", "Hiragino Sans", sans-serif;
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ヘッダー */
+        header {
+            background: #fff;
+            padding: 20px 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-box {
+            background: #ec6b2e;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text .main {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .logo-text .sub {
+            font-size: 11px;
+            color: #666;
+            letter-spacing: 0.5px;
+        }
+
+        .header-title {
+            margin-left: auto;
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        /* プログレスインジケーター */
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            color: #888;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-circle.active {
+            background: linear-gradient(135deg, #ec6b2e, #ff8c42);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(236, 107, 46, 0.3);
+        }
+
+        .step-circle.completed {
+            background: #ec6b2e;
+            color: #fff;
+        }
+
+        .step-circle.completed::after {
+            content: "✓";
+        }
+
+        .step-label {
+            margin-left: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+        }
+
+        .step-label.active {
+            color: #ec6b2e;
+        }
+
+        .step-line {
+            flex: 1;
+            height: 3px;
+            background: #e0e0e0;
+            margin: 0 10px;
+        }
+
+        .step-line.completed {
+            background: #ec6b2e;
+        }
+
+        .progress-step:last-child .step-line {
+            display: none;
+        }
+
+        /* ページコンテンツ */
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* カード共通 */
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Step 1: モデル選択 */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .model-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .model-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .model-card.selected {
+            border-color: #ec6b2e;
+            box-shadow: 0 4px 16px rgba(236, 107, 46, 0.3);
+        }
+
+        .model-image {
+            width: 100%;
+            height: 350px;
+            object-fit: contain;
+            background: #f5f5f5;
+        }
+
+        .model-info {
+            padding: 16px;
+            position: relative;
+        }
+
+        .model-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .model-category {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .model-check {
+            position: absolute;
+            top: -210px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            background: #ec6b2e;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .model-card.selected .model-check {
+            display: flex;
+        }
+
+        /* Step 2: カラー変更 */
+        .color-editor {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        .preview-area {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: #fff;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: #ec6b2e;
+            border-color: #ec6b2e;
+            color: #fff;
+        }
+
+        .preview-image-container {
+            position: relative;
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+
+        .preview-hint {
+            margin-top: 16px;
+            padding: 12px;
+            background: #fff9f5;
+            border-left: 4px solid #ec6b2e;
+            font-size: 13px;
+            color: #666;
+            border-radius: 8px;
+        }
+
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .control-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .parts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .part-btn {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .part-btn:hover {
+            border-color: #ec6b2e;
+        }
+
+        .part-btn.active {
+            background: #ec6b2e;
+            border-color: #ec6b2e;
+            color: #fff;
+        }
+
+        .part-icon {
+            font-size: 20px;
+        }
+
+        .colors-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .colors-grid.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .color-chip {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .color-chip:hover {
+            transform: scale(1.1);
+        }
+
+        .color-chip.selected {
+            border-color: #ec6b2e;
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(236, 107, 46, 0.3);
+        }
+
+        .color-name {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 4px;
+            color: #666;
+        }
+
+        .custom-color-picker {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px dashed #e0e0e0;
+            transition: all 0.3s;
+            position: relative;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e9ecef 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #666;
+        }
+
+        .custom-color-picker:hover {
+            border-color: #ec6b2e;
+            transform: scale(1.1);
+        }
+
+        .custom-color-picker.selected {
+            border-color: #ec6b2e;
+            border-style: solid;
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(236, 107, 46, 0.3);
+        }
+
+        .custom-color-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .part-colors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .part-color-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .part-color-item:hover {
+            background: #fff9f5;
+        }
+
+        .part-color-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .part-color-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .part-color-chip {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .free-word-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .free-word-input:focus {
+            outline: none;
+            border-color: #ec6b2e;
+        }
+
+        /* ボタン */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ec6b2e, #ff8c42);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(236, 107, 46, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(236, 107, 46, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #666;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            border-color: #ec6b2e;
+            color: #ec6b2e;
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: #1e3a5f;
+            border: 2px solid #1e3a5f;
+        }
+
+        .btn-outline:hover {
+            background: #1e3a5f;
+            color: #fff;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        /* Step 3: 画像出力 */
+        .result-images {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .result-image-box {
+            text-align: center;
+            max-width: 300px;
+        }
+
+        .result-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #666;
+        }
+
+        .result-image {
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .color-advice-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .advice-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .advice-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #ec6b2e, #ff8c42);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .advice-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .advice-content {
+            background: #f8f9fa;
+            border-left: 4px solid #ec6b2e;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.8;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .advice-content p {
+            margin-bottom: 12px;
+        }
+
+        .advice-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 50px;
+        }
+
+        .customize-section {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            display: flex;
+            gap: 16px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #ec6b2e, #ff8c42);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .feature-content h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-content p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .schedule-banner {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .schedule-banner h3 {
+            color: #ec6b2e;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .schedule-banner ul {
+            list-style: none;
+            margin-bottom: 12px;
+        }
+
+        .schedule-banner li {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .schedule-banner .note {
+            font-size: 11px;
+            color: #888;
+            margin-top: 12px;
+        }
+
+        .cta-section {
+            text-align: center;
+        }
+
+        .cta-subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-top: 12px;
+        }
+
+        /* Step 4: お問い合わせフォーム */
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .attached-images {
+            background: #fff9f5;
+            border: 2px solid #ec6b2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .attached-images-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .attached-thumbs {
+            display: flex;
+            gap: 12px;
+        }
+
+        .attached-thumb {
+            width: 100px;
+            height: 133px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-label .required {
+            color: #dc2626;
+            margin-left: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ec6b2e;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: #ec6b2e;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ec6b2e;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 1199px) {
+            .color-editor {
+                grid-template-columns: 1fr 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-wrap: wrap;
+            }
+
+            .header-title {
+                margin-left: 0;
+                width: 100%;
+                margin-top: 12px;
+                font-size: 16px;
+            }
+
+            .progress-indicator {
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .step-label {
+                display: none;
+            }
+
+            .model-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .color-editor {
+                grid-template-columns: 1fr;
+            }
+
+            .control-panel {
+                order: -1;
+            }
+
+            .result-images {
+                flex-direction: column;
+            }
+
+            .result-image-box {
+                max-width: 100%;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .model-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .parts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .colors-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="header-content">
+            <div class="logo-box">O</div>
+            <div class="logo-text">
+                <div class="main">OUC</div>
+                <div class="sub">ORDER UNIFORM COMPANY</div>
+            </div>
+            <div class="header-title">パターンオーダー AIシミュレーター</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- プログレスインジケーター -->
+        <div class="progress-indicator">
+            <div class="progress-step">
+                <div class="step-circle" data-step="1">1</div>
+                <span class="step-label">モデル選択</span>
+                <div class="step-line"></div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle" data-step="2">2</div>
+                <span class="step-label">カラー変更</span>
+                <div class="step-line"></div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle" data-step="3">3</div>
+                <span class="step-label">画像出力</span>
+                <div class="step-line"></div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle" data-step="4">4</div>
+                <span class="step-label">お問い合わせ</span>
+            </div>
+        </div>
+
+        <!-- Step 1: モデル選択 -->
+        <div class="page-content active" id="step1">
+            <div class="page-header">
+                <h1 class="page-title">モデルを選択してください</h1>
+                <p class="page-subtitle">ベースとなるパターンオーダーモデルを選択します</p>
+            </div>
+
+            <div class="model-grid" id="modelGrid">
+                <!-- モデルカードはJavaScriptで生成 -->
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="step1Next" disabled>次へ進む</button>
+            </div>
+        </div>
+
+        <!-- Step 2: カラー変更 -->
+        <div class="page-content" id="step2">
+            <div class="page-header">
+                <h1 class="page-title">カラーを変更してください</h1>
+                <p class="page-subtitle">パーツごとに色を指定します</p>
+            </div>
+
+            <div class="color-editor">
+                <!-- プレビューエリア -->
+                <div class="preview-area">
+                    <div class="view-toggle">
+                        <button class="toggle-btn active" data-view="front">正面</button>
+                        <button class="toggle-btn" data-view="back">背面</button>
+                    </div>
+                    <div class="preview-image-container">
+                        <img class="preview-image" id="previewImage" src="" alt="プレビュー">
+                    </div>
+                </div>
+
+                <!-- 操作パネル -->
+                <div class="control-panel">
+                    <!-- パーツ選択 -->
+                    <div class="control-section">
+                        <h3 class="section-title">1. パーツ選択</h3>
+                        <div class="parts-grid" id="partsGrid">
+                            <!-- パーツボタンはJavaScriptで生成 -->
+                        </div>
+                    </div>
+
+                    <!-- カラー選択 -->
+                    <div class="control-section">
+                        <h3 class="section-title" id="colorSectionTitle">2. カラー選択</h3>
+                        <div class="colors-grid disabled" id="colorsGrid">
+                            <!-- カラーチップはJavaScriptで生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 設定中のカラー一覧 -->
+                    <div class="control-section">
+                        <h3 class="section-title">3. 設定中のカラー一覧</h3>
+                        <div class="part-colors-list" id="partColorsList">
+                            <!-- カラー設定リストはJavaScriptで生成 -->
+                        </div>
+                    </div>
+
+                    <!-- アクションボタン -->
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="resetBtn">リセット</button>
+                        <button class="btn btn-primary" id="generateBtn">✨ AIで画像を生成</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: 画像出力 -->
+        <div class="page-content" id="step3">
+            <div class="page-header">
+                <h1 class="page-title">生成完了！</h1>
+                <p class="page-subtitle">AIがデザインを生成しました。修正が必要な場合は再度編集できます。</p>
+            </div>
+
+            <div class="result-images">
+                <div class="result-image-box">
+                    <div class="result-label">正面</div>
+                    <img class="result-image" id="resultFront" src="" alt="生成画像（正面）">
+                </div>
+                <div class="result-image-box">
+                    <div class="result-label">背面</div>
+                    <img class="result-image" id="resultBack" src="" alt="生成画像（背面）">
+                </div>
+            </div>
+
+            <!-- カラーコーディネートアドバイス -->
+            <div class="color-advice-section">
+                <div class="advice-header">
+                    <div class="advice-icon">💡</div>
+                    <h2 class="advice-title">カラーコーディネートアドバイス</h2>
+                </div>
+                <div class="advice-content" id="adviceContent">
+                    <!-- AIからのアドバイスがここに表示されます -->
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="editAgainBtn">🔄 再度編集する</button>
+                <button class="btn btn-outline" id="downloadBtn">💾 画像をダウンロード</button>
+                <button class="btn btn-primary" id="contactBtn">📩 お問い合わせ / 見積もり相談に進む</button>
+            </div>
+
+            <!-- カスタマイズ訴求セクション -->
+            <div class="customize-section">
+                <div class="section-header">
+                    <h2>さらにカスタマイズで、御社だけのユニフォームに</h2>
+                    <p>OUCでは色だけでなく、細部までこだわったオリジナルユニフォームを制作できます</p>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">✨</div>
+                        <div class="feature-content">
+                            <h3>社名・ロゴの刺繍/プリント</h3>
+                            <p>社名やロゴを刺繍やプリントで入れ、ユニフォームに命を吹き込むことができます。</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-content">
+                            <h3>ファスナー・ボタンも選べる</h3>
+                            <p>ファスナー、ボタンは<strong>100色以上</strong>から選択可能。細部までこだわれます。</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🧵</div>
+                        <div class="feature-content">
+                            <h3>季節に合わせた生地選び</h3>
+                            <p>生地は<strong>春夏用・秋冬用・通年用</strong>から選択可能。快適な着心地を実現します。</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📅</div>
+                        <div class="feature-content">
+                            <h3>生産スケジュール</h3>
+                            <p>納期は約4ヶ月〜6ヶ月。最小ロットは各アイテム100着〜（追加生産は50着〜）。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="schedule-banner">
+                    <h3>生産スケジュール</h3>
+                    <ul>
+                        <li>● 納期／約4ヶ月〜6ヶ月</li>
+                        <li>● 最小ロット数 各アイテム／100着〜（追加生産 50着〜）</li>
+                    </ul>
+                    <p class="note">※300着以上は納期要相談　※デザインの選定期間や時期により、変動する可能性がございます。</p>
+                </div>
+
+                <div class="cta-section">
+                    <button class="btn btn-primary" id="contactBtn2">📩 お問い合わせ / 見積もり相談に進む →</button>
+                    <p class="cta-subtitle">まずはお気軽にご相談ください</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: お問い合わせフォーム -->
+        <div class="page-content" id="step4">
+            <div class="page-header">
+                <h1 class="page-title">お問い合わせ</h1>
+                <p class="page-subtitle">生成した画像と一緒にお問い合わせを送信します</p>
+            </div>
+
+            <div class="form-container">
+                <div class="attached-images">
+                    <div class="attached-images-label">📎 添付画像</div>
+                    <div class="attached-thumbs">
+                        <img class="attached-thumb" id="attachedFront" src="" alt="正面">
+                        <img class="attached-thumb" id="attachedBack" src="" alt="背面">
+                    </div>
+                </div>
+
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label class="form-label">会社名<span class="required">*</span></label>
+                        <input type="text" class="form-input" name="company" placeholder="株式会社〇〇" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">お名前<span class="required">*</span></label>
+                        <input type="text" class="form-input" name="name" placeholder="山田 太郎" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">メールアドレス<span class="required">*</span></label>
+                        <input type="email" class="form-input" name="email" placeholder="example@company.co.jp" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">電話番号</label>
+                        <input type="tel" class="form-input" name="phone" placeholder="03-0000-0000">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ご要望・ご質問</label>
+                        <textarea class="form-input form-textarea" name="message" placeholder="導入予定人数、希望納期、その他ご要望など..."></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">📩 お問い合わせを送信</button>
+                    </div>
+                </form>
+
+                <a href="#" class="back-link" id="backToStep3">← 戻る</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // データ定義
+        const models = [
+            { id: 1, name: 'HERO', category: '作業服', fileName: 'hero.png', backFileName: 'hero_back.png' },
+            { id: 2, name: 'ZEPHYR', category: '作業服', fileName: 'zephyr.png', backFileName: 'zephyr_back.png' },
+            { id: 3, name: 'ZERO', category: '作業服', fileName: 'zero.png', backFileName: 'zero_back.png' },
+            { id: 4, name: 'MIRAITO', category: '作業服', fileName: 'miraito.png', backFileName: 'miraito_back.png' },
+            { id: 5, name: 'X-LINE', category: '作業服', fileName: 'x-line.png', backFileName: 'x-line_back.png' },
+            { id: 6, name: 'R-SPORTS', category: '作業服', fileName: 'unnamed4.png', backFileName: 'unnamed4_back.png' },
+        ];
+
+        const parts = [
+            { id: 'collar_front', name: '襟', icon: '👔', view: 'front' },
+            { id: 'body_front', name: '本体', icon: '🧥', view: 'front' },
+            { id: 'sleeve_front', name: '袖', icon: '💪', view: 'front' },
+            { id: 'pocket_front', name: 'ポケット', icon: '📦', view: 'front' },
+            { id: 'hem_front', name: '裾', icon: '📐', view: 'front' },
+            { id: 'collar_back', name: '襟', icon: '👔', view: 'back' },
+            { id: 'body_back', name: '本体', icon: '🧥', view: 'back' },
+            { id: 'sleeve_back', name: '袖', icon: '💪', view: 'back' },
+            { id: 'pocket_back', name: 'ポケット', icon: '📦', view: 'back' },
+            { id: 'hem_back', name: '裾', icon: '📐', view: 'back' },
+        ];
+
+        const colors = [
+            { id: 'navy', name: 'ネイビー', hex: '#1e3a5f' },
+            { id: 'black', name: 'ブラック', hex: '#1a1a1a' },
+            { id: 'gray', name: 'グレー', hex: '#6b7280' },
+            { id: 'white', name: 'ホワイト', hex: '#f5f5f5' },
+            { id: 'red', name: 'レッド', hex: '#dc2626' },
+            { id: 'blue', name: 'ブルー', hex: '#2563eb' },
+            { id: 'green', name: 'グリーン', hex: '#16a34a' },
+            { id: 'orange', name: 'オレンジ', hex: '#ea580c' },
+            { id: 'yellow', name: 'イエロー', hex: '#eab308' },
+            { id: 'brown', name: 'ブラウン', hex: '#78350f' },
+        ];
+
+        // 状態管理
+        let state = {
+            currentStep: 1,
+            selectedModel: null,
+            currentView: 'front',
+            selectedPart: null,
+            partColors: {
+                collar_front: null,
+                body_front: null,
+                sleeve_front: null,
+                pocket_front: null,
+                hem_front: null,
+                collar_back: null,
+                body_back: null,
+                sleeve_back: null,
+                pocket_back: null,
+                hem_back: null,
+            },
+        };
+
+        // 初期化
+        function init() {
+            renderModels();
+            renderParts();
+            renderColors();
+            renderPartColorsList();
+            setupEventListeners();
+        }
+
+        // モデル一覧を描画
+        function renderModels() {
+            const grid = document.getElementById('modelGrid');
+            grid.innerHTML = models.map(model => `
+                <div class="model-card" data-model-id="${model.id}">
+                    <img class="model-image" src="img/model/${model.fileName}" alt="${model.name}">
+                    <div class="model-info">
+                        <div class="model-name">${model.name}</div>
+                        <div class="model-category">${model.category}</div>
+                        <div class="model-check">✓</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // パーツ一覧を描画
+        function renderParts() {
+            const grid = document.getElementById('partsGrid');
+            const filteredParts = parts.filter(part => part.view === state.currentView);
+            grid.innerHTML = filteredParts.map(part => `
+                <button class="part-btn" data-part-id="${part.id}">
+                    <span class="part-icon">${part.icon}</span>
+                    <span>${part.name}</span>
+                </button>
+            `).join('');
+        }
+
+        // カラー一覧を描画
+        function renderColors() {
+            const grid = document.getElementById('colorsGrid');
+            const colorChips = colors.map(color => `
+                <div>
+                    <div class="color-chip" data-color-id="${color.id}" style="background-color: ${color.hex}"></div>
+                </div>
+            `).join('');
+
+            const customPicker = `
+                <div>
+                    <div class="custom-color-picker" id="customColorPicker">
+                        🎨
+                        <input type="color" class="custom-color-input" id="customColorInput">
+                    </div>
+                </div>
+            `;
+
+            grid.innerHTML = colorChips + customPicker;
+        }
+
+        // パーツ別カラー一覧を描画
+        function renderPartColorsList() {
+            const list = document.getElementById('partColorsList');
+
+            const frontParts = parts.filter(p => p.view === 'front');
+            const backParts = parts.filter(p => p.view === 'back');
+
+            const renderPartGroup = (partsList, viewLabel) => {
+                return `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #ec6b2e; margin-bottom: 8px;">${viewLabel}</div>
+                        ${partsList.map(part => {
+                            const colorData = state.partColors[part.id];
+                            let colorDisplay = '<span>未設定</span>';
+
+                            if (colorData) {
+                                if (typeof colorData === 'string') {
+                                    const color = colors.find(c => c.id === colorData);
+                                    if (color) {
+                                        colorDisplay = `
+                                            <span class="part-color-chip" style="background-color: ${color.hex}"></span>
+                                            <span>${color.name}</span>
+                                        `;
+                                    }
+                                } else if (typeof colorData === 'object' && colorData.custom) {
+                                    colorDisplay = `
+                                        <span class="part-color-chip" style="background-color: ${colorData.hex}"></span>
+                                        <span>カスタム (${colorData.hex})</span>
+                                    `;
+                                }
+                            }
+
+                            return `
+                                <div class="part-color-item" data-part-id="${part.id}">
+                                    <span class="part-color-name">${part.icon} ${part.name}</span>
+                                    <span class="part-color-value">
+                                        ${colorDisplay}
+                                    </span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            };
+
+            list.innerHTML = renderPartGroup(frontParts, '正面') + renderPartGroup(backParts, '背面');
+        }
+
+        // イベントリスナー設定
+        function setupEventListeners() {
+            // Step 1: モデル選択
+            document.getElementById('modelGrid').addEventListener('click', (e) => {
+                const card = e.target.closest('.model-card');
+                if (!card) return;
+
+                document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+
+                state.selectedModel = models.find(m => m.id == card.dataset.modelId);
+                document.getElementById('step1Next').disabled = false;
+            });
+
+            document.getElementById('step1Next').addEventListener('click', () => {
+                goToStep(2);
+                updatePreviewImage();
+            });
+
+            // Step 2: プレビュー切り替え
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.currentView = btn.dataset.view;
+                    state.selectedPart = null;
+                    document.querySelectorAll('.part-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
+                    document.getElementById('customColorPicker').classList.remove('selected');
+                    document.getElementById('colorsGrid').classList.add('disabled');
+                    document.getElementById('colorSectionTitle').textContent = '2. カラー選択';
+                    updatePreviewImage();
+                    renderParts();
+                });
+            });
+
+            // Step 2: パーツ選択
+            document.getElementById('partsGrid').addEventListener('click', (e) => {
+                const btn = e.target.closest('.part-btn');
+                if (!btn) return;
+
+                document.querySelectorAll('.part-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                state.selectedPart = btn.dataset.partId;
+                document.getElementById('colorsGrid').classList.remove('disabled');
+
+                const part = parts.find(p => p.id === state.selectedPart);
+                document.getElementById('colorSectionTitle').textContent = `2. カラー選択（${part.name}）`;
+            });
+
+            // Step 2: カラー選択
+            document.getElementById('colorsGrid').addEventListener('click', (e) => {
+                const chip = e.target.closest('.color-chip');
+                if (!chip || !state.selectedPart) return;
+
+                document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
+                document.getElementById('customColorPicker').classList.remove('selected');
+                chip.classList.add('selected');
+
+                state.partColors[state.selectedPart] = chip.dataset.colorId;
+                renderPartColorsList();
+            });
+
+            // Step 2: カスタムカラーピッカー
+            document.getElementById('customColorInput').addEventListener('change', (e) => {
+                if (!state.selectedPart) return;
+
+                const customColor = e.target.value;
+
+                document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
+                document.getElementById('customColorPicker').classList.add('selected');
+                document.getElementById('customColorPicker').style.background = customColor;
+
+                state.partColors[state.selectedPart] = {
+                    custom: true,
+                    hex: customColor
+                };
+                renderPartColorsList();
+            });
+
+            // Step 2: パーツカラーリストからパーツ選択
+            document.getElementById('partColorsList').addEventListener('click', (e) => {
+                const item = e.target.closest('.part-color-item');
+                if (!item) return;
+
+                const partId = item.dataset.partId;
+                const btn = document.querySelector(`.part-btn[data-part-id="${partId}"]`);
+                if (btn) btn.click();
+            });
+
+            // Step 2: リセット
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                state.partColors = {
+                    collar_front: null,
+                    body_front: null,
+                    sleeve_front: null,
+                    pocket_front: null,
+                    hem_front: null,
+                    collar_back: null,
+                    body_back: null,
+                    sleeve_back: null,
+                    pocket_back: null,
+                    hem_back: null,
+                };
+                state.selectedPart = null;
+                document.querySelectorAll('.part-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
+                document.getElementById('customColorPicker').classList.remove('selected');
+                document.getElementById('customColorPicker').style.background = 'linear-gradient(135deg, #f5f5f5 0%, #e9ecef 100%)';
+                document.getElementById('colorsGrid').classList.add('disabled');
+                document.getElementById('colorSectionTitle').textContent = '2. カラー選択';
+                renderPartColorsList();
+            });
+
+            // Step 2: AI生成
+            document.getElementById('generateBtn').addEventListener('click', () => {
+                // 実際のAI生成処理はここで実装
+                // 今回はモックなので、既存の画像を表示
+                setTimeout(() => {
+                    goToStep(3);
+                    updateResultImages();
+                }, 1500);
+            });
+
+            // Step 3: 再度編集
+            document.getElementById('editAgainBtn').addEventListener('click', () => {
+                goToStep(2);
+            });
+
+            // Step 3: ダウンロード
+            document.getElementById('downloadBtn').addEventListener('click', () => {
+                alert('画像ダウンロード機能（実装予定）');
+            });
+
+            // Step 3: お問い合わせへ
+            document.getElementById('contactBtn').addEventListener('click', () => {
+                goToStep(4);
+                updateAttachedImages();
+            });
+
+            document.getElementById('contactBtn2').addEventListener('click', () => {
+                goToStep(4);
+                updateAttachedImages();
+            });
+
+            // Step 4: 戻る
+            document.getElementById('backToStep3').addEventListener('click', (e) => {
+                e.preventDefault();
+                goToStep(3);
+            });
+
+            // Step 4: フォーム送信
+            document.getElementById('contactForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('お問い合わせを送信しました（モック）');
+            });
+        }
+
+        // ステップ遷移
+        function goToStep(step) {
+            state.currentStep = step;
+
+            // ページコンテンツ切り替え
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+
+            // プログレスインジケーター更新
+            document.querySelectorAll('.step-circle').forEach((circle, index) => {
+                const stepNum = index + 1;
+                const label = circle.nextElementSibling;
+                const line = circle.parentElement.querySelector('.step-line');
+
+                circle.classList.remove('active', 'completed');
+                if (label) label.classList.remove('active');
+                if (line) line.classList.remove('completed');
+
+                if (stepNum < step) {
+                    circle.classList.add('completed');
+                    if (line) line.classList.add('completed');
+                } else if (stepNum === step) {
+                    circle.classList.add('active');
+                    if (label) label.classList.add('active');
+                }
+            });
+
+            // ページトップへスクロール
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // プレビュー画像更新
+        function updatePreviewImage() {
+            if (!state.selectedModel) return;
+            const fileName = state.currentView === 'front'
+                ? state.selectedModel.fileName
+                : state.selectedModel.backFileName;
+            const folder = state.currentView === 'front' ? 'model' : 'model_back';
+            const imagePath = `img/${folder}/${fileName}`;
+            document.getElementById('previewImage').src = imagePath;
+        }
+
+        // 生成結果画像更新
+        function updateResultImages() {
+            if (!state.selectedModel) return;
+            const frontPath = `img/model/${state.selectedModel.fileName}`;
+            const backPath = `img/model_back/${state.selectedModel.backFileName}`;
+            document.getElementById('resultFront').src = frontPath;
+            document.getElementById('resultBack').src = backPath;
+            generateColorAdvice();
+        }
+
+        // カラーコーディネートアドバイス生成
+        function generateColorAdvice() {
+            const advices = [
+                {
+                    condition: () => {
+                        const bodyColor = getColorName('body_front') || getColorName('body_back');
+                        return bodyColor && (bodyColor.includes('ネイビー') || bodyColor.includes('ブラック'));
+                    },
+                    text: '<p><strong>プロフェッショナルな印象</strong>を与える配色です。ネイビーやブラックをベースカラーとすることで、落ち着きと信頼感を演出できます。</p><p>アクセントカラーとして明るい色を襟や袖に取り入れることで、堅すぎない親しみやすさも加わります。企業の顔として外部と接する機会が多い職種に最適です。</p>'
+                },
+                {
+                    condition: () => {
+                        const bodyColor = getColorName('body_front') || getColorName('body_back');
+                        return bodyColor && (bodyColor.includes('レッド') || bodyColor.includes('オレンジ'));
+                    },
+                    text: '<p><strong>エネルギッシュで活動的</strong>な印象を与える配色です。レッドやオレンジは視認性が高く、屋外作業や安全管理が重要な現場に適しています。</p><p>暖色系の組み合わせは、チームの一体感と活気を生み出します。建設現場や物流業などアクティブな業種におすすめのカラーコーディネートです。</p>'
+                },
+                {
+                    condition: () => {
+                        const bodyColor = getColorName('body_front') || getColorName('body_back');
+                        return bodyColor && (bodyColor.includes('ブルー') || bodyColor.includes('グリーン'));
+                    },
+                    text: '<p><strong>清潔感と爽やかさ</strong>を印象づける配色です。ブルーやグリーンは心理的に安心感を与え、医療・福祉・食品関連業界に好まれます。</p><p>寒色系の配色は知的で誠実な印象を与えるため、技術職やサービス業にも適しています。明るめのトーンを選ぶことで、親しみやすさも加わります。</p>'
+                },
+                {
+                    condition: () => true,
+                    text: '<p><strong>バランスの取れた配色</strong>が選択されています。選ばれたカラーの組み合わせは、御社のブランドイメージを効果的に表現できます。</p><p>パーツごとに異なる色を配置することで、立体感と視覚的な変化が生まれ、デザイン性の高いユニフォームに仕上がります。現場での識別性も向上します。</p>'
+                }
+            ];
+
+            for (let advice of advices) {
+                if (advice.condition()) {
+                    document.getElementById('adviceContent').innerHTML = advice.text;
+                    break;
+                }
+            }
+        }
+
+        // カラー名を取得
+        function getColorName(partId) {
+            const colorData = state.partColors[partId];
+            if (!colorData) return null;
+
+            if (typeof colorData === 'string') {
+                const color = colors.find(c => c.id === colorData);
+                return color ? color.name : null;
+            } else if (typeof colorData === 'object' && colorData.custom) {
+                return 'カスタム';
+            }
+            return null;
+        }
+
+        // 添付画像更新
+        function updateAttachedImages() {
+            if (!state.selectedModel) return;
+            const frontPath = `img/model/${state.selectedModel.fileName}`;
+            const backPath = `img/model_back/${state.selectedModel.backFileName}`;
+            document.getElementById('attachedFront').src = frontPath;
+            document.getElementById('attachedBack').src = backPath;
+        }
+
+        // 初期化実行
+        init();
+    </script>
+</body>
+</html>
