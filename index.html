@@ -1090,27 +1090,27 @@
         <!-- プログレスインジケーター -->
         <div class="progress-indicator">
             <div class="progress-step">
-                <div class="step-circle" data-step="0">1</div>
+                <div class="step-circle" data-step="0"></div>
                 <span class="step-label">情報入力</span>
                 <div class="step-line"></div>
             </div>
             <div class="progress-step">
-                <div class="step-circle" data-step="1">2</div>
+                <div class="step-circle" data-step="1"></div>
                 <span class="step-label">モデル選択</span>
                 <div class="step-line"></div>
             </div>
             <div class="progress-step">
-                <div class="step-circle" data-step="2">3</div>
+                <div class="step-circle" data-step="2"></div>
                 <span class="step-label">カラー変更</span>
                 <div class="step-line"></div>
             </div>
             <div class="progress-step">
-                <div class="step-circle" data-step="3">4</div>
+                <div class="step-circle" data-step="3"></div>
                 <span class="step-label">画像出力</span>
                 <div class="step-line"></div>
             </div>
             <div class="progress-step">
-                <div class="step-circle" data-step="4">5</div>
+                <div class="step-circle" data-step="4"></div>
                 <span class="step-label">お問い合わせ</span>
             </div>
         </div>
@@ -1450,6 +1450,7 @@
             renderColors();
             renderPartColorsList();
             setupEventListeners();
+            goToStep(0); // 初期表示
         }
 
         // モデル一覧を描画
@@ -1733,7 +1734,8 @@
 
             // プログレスインジケーター更新
             document.querySelectorAll('.step-circle').forEach((circle, index) => {
-                const stepNum = index + 1;
+                const stepNum = parseInt(circle.dataset.step);
+                const displayNum = index + 1; // 表示用の番号（1〜5）
                 const label = circle.nextElementSibling;
                 const line = circle.parentElement.querySelector('.step-line');
 
@@ -1743,10 +1745,14 @@
 
                 if (stepNum < step) {
                     circle.classList.add('completed');
+                    circle.textContent = ''; // 完了時はチェックマークのみ
                     if (line) line.classList.add('completed');
                 } else if (stepNum === step) {
                     circle.classList.add('active');
+                    circle.textContent = displayNum;
                     if (label) label.classList.add('active');
+                } else {
+                    circle.textContent = displayNum;
                 }
             });
 
