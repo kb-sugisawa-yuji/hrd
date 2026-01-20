@@ -1378,6 +1378,55 @@
                 <a href="#" class="back-link" id="backToStep3">← 戻る</a>
             </div>
         </div>
+
+        <!-- Step 5: お問い合わせ完了 -->
+        <div class="page-content" id="step5">
+            <div class="page-header">
+                <h1 class="page-title">お問い合わせを受け付けました</h1>
+                <p class="page-subtitle">ご入力いただいた内容を確認の上、担当者よりご連絡いたします</p>
+            </div>
+
+            <div class="form-container">
+                <!-- 完了メッセージ -->
+                <div class="card" style="text-align: center; padding: 60px 40px; margin-bottom: 30px;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
+                    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: #ec6b2e;">送信完了しました</h2>
+                    <p style="font-size: 14px; line-height: 1.8; color: #666; margin-bottom: 24px;">
+                        お問い合わせありがとうございます。<br>
+                        入力いただいたメールアドレス宛に、受付完了のメールを送信いたしました。<br>
+                        2〜3営業日以内に担当者よりご連絡させていただきます。
+                    </p>
+                    <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; margin-bottom: 24px;">
+                        <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                            <strong>ご入力いただいた情報</strong><br>
+                            会社名：<span id="completedCompany"></span><br>
+                            お名前：<span id="completedName"></span><br>
+                            メールアドレス：<span id="completedEmail"></span>
+                        </p>
+                    </div>
+                    <p style="font-size: 12px; color: #888;">
+                        ※メールが届かない場合は、迷惑メールフォルダをご確認ください。<br>
+                        ※お急ぎの場合は、お電話でもお問い合わせを承っております。
+                    </p>
+                </div>
+
+                <!-- お問い合わせ情報 -->
+                <div class="card" style="padding: 30px; margin-bottom: 30px; background: #fff9f5; border: 2px solid #ec6b2e;">
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #ec6b2e;">📞 お急ぎの方はお電話でも承ります</h3>
+                    <p style="font-size: 14px; color: #666; line-height: 1.8;">
+                        OUC カスタマーサポート<br>
+                        <strong style="font-size: 20px; color: #1a1a1a;">0120-XXX-XXX</strong><br>
+                        受付時間：平日 9:00〜18:00
+                    </p>
+                </div>
+
+                <!-- アクションボタン -->
+                <div class="button-group">
+                    <button class="btn btn-secondary" id="backToTopBtn">トップページへ戻る</button>
+                    <button class="btn btn-primary" id="restartSimulatorBtn">もう一度シミュレーターを使う</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1720,7 +1769,28 @@
             // Step 4: フォーム送信
             document.getElementById('contactForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                alert('お問い合わせを送信しました（モック）');
+
+                // 実際のバックエンド送信処理はここで実装
+                // モックでは完了画面に情報を表示
+                const form = e.target;
+                document.getElementById('completedCompany').textContent = form.elements['company'].value;
+                document.getElementById('completedName').textContent = form.elements['name'].value;
+                document.getElementById('completedEmail').textContent = form.elements['email'].value;
+
+                // 完了画面へ遷移
+                goToStep(5);
+            });
+
+            // Step 5: トップページへ戻る
+            document.getElementById('backToTopBtn').addEventListener('click', () => {
+                // モックでは単にリロード
+                window.location.reload();
+            });
+
+            // Step 5: もう一度シミュレーターを使う
+            document.getElementById('restartSimulatorBtn').addEventListener('click', () => {
+                // 状態をリセットしてStep 0へ
+                window.location.reload();
             });
         }
 
@@ -1732,29 +1802,37 @@
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.getElementById(`step${step}`).classList.add('active');
 
-            // プログレスインジケーター更新
-            document.querySelectorAll('.step-circle').forEach((circle, index) => {
-                const stepNum = parseInt(circle.dataset.step);
-                const displayNum = index + 1; // 表示用の番号（1〜5）
-                const label = circle.nextElementSibling;
-                const line = circle.parentElement.querySelector('.step-line');
+            // Step 5（完了画面）の場合、プログレスインジケーターを非表示
+            const progressIndicator = document.querySelector('.progress-indicator');
+            if (step === 5) {
+                progressIndicator.style.display = 'none';
+            } else {
+                progressIndicator.style.display = 'flex';
 
-                circle.classList.remove('active', 'completed');
-                if (label) label.classList.remove('active');
-                if (line) line.classList.remove('completed');
+                // プログレスインジケーター更新
+                document.querySelectorAll('.step-circle').forEach((circle, index) => {
+                    const stepNum = parseInt(circle.dataset.step);
+                    const displayNum = index + 1; // 表示用の番号（1〜5）
+                    const label = circle.nextElementSibling;
+                    const line = circle.parentElement.querySelector('.step-line');
 
-                if (stepNum < step) {
-                    circle.classList.add('completed');
-                    circle.textContent = ''; // 完了時はチェックマークのみ
-                    if (line) line.classList.add('completed');
-                } else if (stepNum === step) {
-                    circle.classList.add('active');
-                    circle.textContent = displayNum;
-                    if (label) label.classList.add('active');
-                } else {
-                    circle.textContent = displayNum;
-                }
-            });
+                    circle.classList.remove('active', 'completed');
+                    if (label) label.classList.remove('active');
+                    if (line) line.classList.remove('completed');
+
+                    if (stepNum < step) {
+                        circle.classList.add('completed');
+                        circle.textContent = ''; // 完了時はチェックマークのみ
+                        if (line) line.classList.add('completed');
+                    } else if (stepNum === step) {
+                        circle.classList.add('active');
+                        circle.textContent = displayNum;
+                        if (label) label.classList.add('active');
+                    } else {
+                        circle.textContent = displayNum;
+                    }
+                });
+            }
 
             // ページトップへスクロール
             window.scrollTo({ top: 0, behavior: 'smooth' });
