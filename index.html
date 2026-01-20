@@ -574,6 +574,23 @@
         .result-image-box {
             text-align: center;
             max-width: 300px;
+            position: relative;
+        }
+
+        .ai-generated-overlay {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(236, 107, 46, 0.95);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            white-space: nowrap;
         }
 
         .result-label {
@@ -669,6 +686,46 @@
         .section-header p {
             font-size: 14px;
             color: #666;
+        }
+
+        .logo-feature-banner {
+            background: linear-gradient(135deg, #ec6b2e, #ff8c42);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 4px 16px rgba(236, 107, 46, 0.3);
+        }
+
+        .logo-feature-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            flex-shrink: 0;
+        }
+
+        .logo-feature-content {
+            flex: 1;
+            color: #fff;
+        }
+
+        .logo-feature-content h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .logo-feature-content p {
+            font-size: 16px;
+            line-height: 1.8;
+            opacity: 0.95;
         }
 
         .feature-grid {
@@ -832,6 +889,78 @@
             color: #ec6b2e;
         }
 
+        /* Step 0: 使用前フォーム */
+        .terms-box {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .terms-box h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #ec6b2e;
+        }
+
+        .terms-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .terms-box li {
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .terms-box li:before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: #ec6b2e;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .checkbox-input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #ec6b2e;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .privacy-link {
+            color: #ec6b2e;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .privacy-link:hover {
+            color: #ff8c42;
+        }
+
         /* Loading */
         .loading {
             display: none;
@@ -913,6 +1042,20 @@
             .feature-grid {
                 grid-template-columns: 1fr;
             }
+
+            .logo-feature-banner {
+                flex-direction: column;
+                padding: 30px 20px;
+                text-align: center;
+            }
+
+            .logo-feature-content h3 {
+                font-size: 20px;
+            }
+
+            .logo-feature-content p {
+                font-size: 14px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -947,28 +1090,90 @@
         <!-- プログレスインジケーター -->
         <div class="progress-indicator">
             <div class="progress-step">
-                <div class="step-circle" data-step="1">1</div>
+                <div class="step-circle" data-step="0">1</div>
+                <span class="step-label">情報入力</span>
+                <div class="step-line"></div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle" data-step="1">2</div>
                 <span class="step-label">モデル選択</span>
                 <div class="step-line"></div>
             </div>
             <div class="progress-step">
-                <div class="step-circle" data-step="2">2</div>
+                <div class="step-circle" data-step="2">3</div>
                 <span class="step-label">カラー変更</span>
                 <div class="step-line"></div>
             </div>
             <div class="progress-step">
-                <div class="step-circle" data-step="3">3</div>
+                <div class="step-circle" data-step="3">4</div>
                 <span class="step-label">画像出力</span>
                 <div class="step-line"></div>
             </div>
             <div class="progress-step">
-                <div class="step-circle" data-step="4">4</div>
+                <div class="step-circle" data-step="4">5</div>
                 <span class="step-label">お問い合わせ</span>
             </div>
         </div>
 
+        <!-- Step 0: 情報入力 -->
+        <div class="page-content active" id="step0">
+            <div class="page-header">
+                <h1 class="page-title">AIシミュレーターをご利用の前に</h1>
+                <p class="page-subtitle">以下の情報をご入力ください</p>
+            </div>
+
+            <div class="form-container">
+                <!-- 使用上の注意事項 -->
+                <div class="terms-box">
+                    <h3>使用上の注意事項</h3>
+                    <ul>
+                        <li>本シミュレーターで生成される画像は、実際の製品の色味と異なる場合がございます。</li>
+                        <li>生成された画像はイメージ参考用であり、実際の製品を保証するものではありません。</li>
+                        <li>ご入力いただいた情報は、お問い合わせ対応及びサービス向上のために使用いたします。</li>
+                        <li>シミュレーション結果は、あくまでカラーコーディネートの参考としてご活用ください。</li>
+                        <li>実際の製品の詳細につきましては、お問い合わせフォームよりご相談ください。</li>
+                    </ul>
+                </div>
+
+                <!-- 簡易フォーム -->
+                <form id="preRegistrationForm">
+                    <div class="form-group">
+                        <label class="form-label">会社名<span class="required">*</span></label>
+                        <input type="text" class="form-input" name="company" id="preCompany" placeholder="株式会社〇〇" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">お名前<span class="required">*</span></label>
+                        <input type="text" class="form-input" name="name" id="preName" placeholder="山田 太郎" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">電話番号<span class="required">*</span></label>
+                        <input type="tel" class="form-input" name="phone" id="prePhone" placeholder="03-0000-0000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">メールアドレス<span class="required">*</span></label>
+                        <input type="email" class="form-input" name="email" id="preEmail" placeholder="example@company.co.jp" required>
+                    </div>
+
+                    <!-- 個人情報保護方針への同意 -->
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="checkbox-input" id="privacyAgree" required>
+                        <label class="checkbox-label" for="privacyAgree">
+                            <a href="https://www.ouc.co.jp/privacy/" target="_blank" class="privacy-link">個人情報保護方針</a>に同意します
+                        </label>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">シミュレーターを開始</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Step 1: モデル選択 -->
-        <div class="page-content active" id="step1">
+        <div class="page-content" id="step1">
             <div class="page-header">
                 <h1 class="page-title">モデルを選択してください</h1>
                 <p class="page-subtitle">ベースとなるパターンオーダーモデルを選択します</p>
@@ -1047,10 +1252,12 @@
             <div class="result-images">
                 <div class="result-image-box">
                     <div class="result-label">正面</div>
+                    <div class="ai-generated-overlay">※AIでカラーを変更した写真</div>
                     <img class="result-image" id="resultFront" src="" alt="生成画像（正面）">
                 </div>
                 <div class="result-image-box">
                     <div class="result-label">背面</div>
+                    <div class="ai-generated-overlay">※AIでカラーを変更した写真</div>
                     <img class="result-image" id="resultBack" src="" alt="生成画像（背面）">
                 </div>
             </div>
@@ -1079,14 +1286,16 @@
                     <p>OUCでは色だけでなく、細部までこだわったオリジナルユニフォームを制作できます</p>
                 </div>
 
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">✨</div>
-                        <div class="feature-content">
-                            <h3>社名・ロゴの刺繍/プリント</h3>
-                            <p>社名やロゴを刺繍やプリントで入れ、ユニフォームに命を吹き込むことができます。</p>
-                        </div>
+                <!-- 社名・ロゴ刺繍バナー -->
+                <div class="logo-feature-banner">
+                    <div class="logo-feature-icon">✨</div>
+                    <div class="logo-feature-content">
+                        <h3>社名・ロゴの刺繍/プリント</h3>
+                        <p>社名やロゴを刺繍やプリントで入れ、ユニフォームに命を吹き込むことができます。御社のブランドイメージを反映した、唯一無二のユニフォームを制作いたします。</p>
                     </div>
+                </div>
+
+                <div class="feature-grid">
                     <div class="feature-card">
                         <div class="feature-icon">🎨</div>
                         <div class="feature-content">
@@ -1099,13 +1308,6 @@
                         <div class="feature-content">
                             <h3>季節に合わせた生地選び</h3>
                             <p>生地は<strong>春夏用・秋冬用・通年用</strong>から選択可能。快適な着心地を実現します。</p>
-                        </div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📅</div>
-                        <div class="feature-content">
-                            <h3>生産スケジュール</h3>
-                            <p>納期は約4ヶ月〜6ヶ月。最小ロットは各アイテム100着〜（追加生産は50着〜）。</p>
                         </div>
                     </div>
                 </div>
@@ -1217,7 +1419,13 @@
 
         // 状態管理
         let state = {
-            currentStep: 1,
+            currentStep: 0,
+            userInfo: {
+                company: '',
+                name: '',
+                phone: '',
+                email: '',
+            },
             selectedModel: null,
             currentView: 'front',
             selectedPart: null,
@@ -1342,6 +1550,20 @@
 
         // イベントリスナー設定
         function setupEventListeners() {
+            // Step 0: 情報入力フォーム
+            document.getElementById('preRegistrationForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                // ユーザー情報を保存
+                state.userInfo.company = document.getElementById('preCompany').value;
+                state.userInfo.name = document.getElementById('preName').value;
+                state.userInfo.phone = document.getElementById('prePhone').value;
+                state.userInfo.email = document.getElementById('preEmail').value;
+
+                // モデル選択画面へ
+                goToStep(1);
+            });
+
             // Step 1: モデル選択
             document.getElementById('modelGrid').addEventListener('click', (e) => {
                 const card = e.target.closest('.model-card');
@@ -1479,11 +1701,13 @@
             document.getElementById('contactBtn').addEventListener('click', () => {
                 goToStep(4);
                 updateAttachedImages();
+                fillContactForm();
             });
 
             document.getElementById('contactBtn2').addEventListener('click', () => {
                 goToStep(4);
                 updateAttachedImages();
+                fillContactForm();
             });
 
             // Step 4: 戻る
@@ -1610,6 +1834,15 @@
             const backPath = `img/model_back/${state.selectedModel.backFileName}`;
             document.getElementById('attachedFront').src = frontPath;
             document.getElementById('attachedBack').src = backPath;
+        }
+
+        // お問い合わせフォーム自動入力
+        function fillContactForm() {
+            const form = document.getElementById('contactForm');
+            form.elements['company'].value = state.userInfo.company;
+            form.elements['name'].value = state.userInfo.name;
+            form.elements['phone'].value = state.userInfo.phone;
+            form.elements['email'].value = state.userInfo.email;
         }
 
         // 初期化実行
