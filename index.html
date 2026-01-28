@@ -607,55 +607,6 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.12);
         }
 
-        .color-advice-section {
-            background: #fff;
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 40px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
-
-        .advice-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .advice-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #ec6b2e, #ff8c42);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-
-        .advice-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .advice-content {
-            background: #f8f9fa;
-            border-left: 4px solid #ec6b2e;
-            padding: 20px;
-            border-radius: 8px;
-            line-height: 1.8;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .advice-content p {
-            margin-bottom: 12px;
-        }
-
-        .advice-content p:last-child {
-            margin-bottom: 0;
-        }
 
         .action-buttons {
             display: grid;
@@ -799,6 +750,11 @@
 
         .cta-section {
             text-align: center;
+        }
+
+        .cta-section .btn {
+            padding: 20px 48px;
+            font-size: 18px;
         }
 
         .cta-subtitle {
@@ -1217,17 +1173,9 @@
                         </div>
                     </div>
 
-                    <!-- カラー選択 -->
-                    <div class="control-section">
-                        <h3 class="section-title" id="colorSectionTitle">2. カラー選択</h3>
-                        <div class="colors-grid disabled" id="colorsGrid">
-                            <!-- カラーチップはJavaScriptで生成 -->
-                        </div>
-                    </div>
-
                     <!-- 設定中のカラー一覧 -->
                     <div class="control-section">
-                        <h3 class="section-title">3. 設定中のカラー一覧</h3>
+                        <h3 class="section-title">2. 設定中のカラー一覧</h3>
                         <div class="part-colors-list" id="partColorsList">
                             <!-- カラー設定リストはJavaScriptで生成 -->
                         </div>
@@ -1262,17 +1210,6 @@
                 </div>
             </div>
 
-            <!-- カラーコーディネートアドバイス -->
-            <div class="color-advice-section">
-                <div class="advice-header">
-                    <div class="advice-icon">💡</div>
-                    <h2 class="advice-title">カラーコーディネートアドバイス</h2>
-                </div>
-                <div class="advice-content" id="adviceContent">
-                    <!-- AIからのアドバイスがここに表示されます -->
-                </div>
-            </div>
-
             <div class="action-buttons">
                 <button class="btn btn-secondary" id="editAgainBtn">🔄 再度編集する</button>
                 <button class="btn btn-outline" id="downloadBtn">💾 画像をダウンロード</button>
@@ -1284,6 +1221,7 @@
                 <div class="section-header">
                     <h2>さらにカスタマイズで、御社だけのユニフォームに</h2>
                     <p>OUCでは色だけでなく、細部までこだわったオリジナルユニフォームを制作できます</p>
+                    <p style="font-size: 18px; font-weight: 700; color: #ec6b2e; margin-top: 12px;">目安金額：15,000円/着〜</p>
                 </div>
 
                 <!-- 社名・ロゴ刺繍バナー -->
@@ -1496,7 +1434,6 @@
         function init() {
             renderModels();
             renderParts();
-            renderColors();
             renderPartColorsList();
             setupEventListeners();
             goToStep(0); // 初期表示
@@ -1527,27 +1464,6 @@
                     <span>${part.name}</span>
                 </button>
             `).join('');
-        }
-
-        // カラー一覧を描画
-        function renderColors() {
-            const grid = document.getElementById('colorsGrid');
-            const colorChips = colors.map(color => `
-                <div>
-                    <div class="color-chip" data-color-id="${color.id}" style="background-color: ${color.hex}"></div>
-                </div>
-            `).join('');
-
-            const customPicker = `
-                <div>
-                    <div class="custom-color-picker" id="customColorPicker">
-                        🎨
-                        <input type="color" class="custom-color-input" id="customColorInput">
-                    </div>
-                </div>
-            `;
-
-            grid.innerHTML = colorChips + customPicker;
         }
 
         // パーツ別カラー一覧を描画
@@ -1639,10 +1555,6 @@
                     state.currentView = btn.dataset.view;
                     state.selectedPart = null;
                     document.querySelectorAll('.part-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
-                    document.getElementById('customColorPicker').classList.remove('selected');
-                    document.getElementById('colorsGrid').classList.add('disabled');
-                    document.getElementById('colorSectionTitle').textContent = '2. カラー選択';
                     updatePreviewImage();
                     renderParts();
                 });
@@ -1657,40 +1569,6 @@
                 btn.classList.add('active');
 
                 state.selectedPart = btn.dataset.partId;
-                document.getElementById('colorsGrid').classList.remove('disabled');
-
-                const part = parts.find(p => p.id === state.selectedPart);
-                document.getElementById('colorSectionTitle').textContent = `2. カラー選択（${part.name}）`;
-            });
-
-            // Step 2: カラー選択
-            document.getElementById('colorsGrid').addEventListener('click', (e) => {
-                const chip = e.target.closest('.color-chip');
-                if (!chip || !state.selectedPart) return;
-
-                document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
-                document.getElementById('customColorPicker').classList.remove('selected');
-                chip.classList.add('selected');
-
-                state.partColors[state.selectedPart] = chip.dataset.colorId;
-                renderPartColorsList();
-            });
-
-            // Step 2: カスタムカラーピッカー
-            document.getElementById('customColorInput').addEventListener('change', (e) => {
-                if (!state.selectedPart) return;
-
-                const customColor = e.target.value;
-
-                document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
-                document.getElementById('customColorPicker').classList.add('selected');
-                document.getElementById('customColorPicker').style.background = customColor;
-
-                state.partColors[state.selectedPart] = {
-                    custom: true,
-                    hex: customColor
-                };
-                renderPartColorsList();
             });
 
             // Step 2: パーツカラーリストからパーツ選択
@@ -1719,11 +1597,6 @@
                 };
                 state.selectedPart = null;
                 document.querySelectorAll('.part-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
-                document.getElementById('customColorPicker').classList.remove('selected');
-                document.getElementById('customColorPicker').style.background = 'linear-gradient(135deg, #f5f5f5 0%, #e9ecef 100%)';
-                document.getElementById('colorsGrid').classList.add('disabled');
-                document.getElementById('colorSectionTitle').textContent = '2. カラー選択';
                 renderPartColorsList();
             });
 
@@ -1856,60 +1729,8 @@
             const backPath = `img/model_back/${state.selectedModel.backFileName}`;
             document.getElementById('resultFront').src = frontPath;
             document.getElementById('resultBack').src = backPath;
-            generateColorAdvice();
         }
 
-        // カラーコーディネートアドバイス生成
-        function generateColorAdvice() {
-            const advices = [
-                {
-                    condition: () => {
-                        const bodyColor = getColorName('body_front') || getColorName('body_back');
-                        return bodyColor && (bodyColor.includes('ネイビー') || bodyColor.includes('ブラック'));
-                    },
-                    text: '<p><strong>プロフェッショナルな印象</strong>を与える配色です。ネイビーやブラックをベースカラーとすることで、落ち着きと信頼感を演出できます。</p><p>アクセントカラーとして明るい色を襟や袖に取り入れることで、堅すぎない親しみやすさも加わります。企業の顔として外部と接する機会が多い職種に最適です。</p>'
-                },
-                {
-                    condition: () => {
-                        const bodyColor = getColorName('body_front') || getColorName('body_back');
-                        return bodyColor && (bodyColor.includes('レッド') || bodyColor.includes('オレンジ'));
-                    },
-                    text: '<p><strong>エネルギッシュで活動的</strong>な印象を与える配色です。レッドやオレンジは視認性が高く、屋外作業や安全管理が重要な現場に適しています。</p><p>暖色系の組み合わせは、チームの一体感と活気を生み出します。建設現場や物流業などアクティブな業種におすすめのカラーコーディネートです。</p>'
-                },
-                {
-                    condition: () => {
-                        const bodyColor = getColorName('body_front') || getColorName('body_back');
-                        return bodyColor && (bodyColor.includes('ブルー') || bodyColor.includes('グリーン'));
-                    },
-                    text: '<p><strong>清潔感と爽やかさ</strong>を印象づける配色です。ブルーやグリーンは心理的に安心感を与え、医療・福祉・食品関連業界に好まれます。</p><p>寒色系の配色は知的で誠実な印象を与えるため、技術職やサービス業にも適しています。明るめのトーンを選ぶことで、親しみやすさも加わります。</p>'
-                },
-                {
-                    condition: () => true,
-                    text: '<p><strong>バランスの取れた配色</strong>が選択されています。選ばれたカラーの組み合わせは、御社のブランドイメージを効果的に表現できます。</p><p>パーツごとに異なる色を配置することで、立体感と視覚的な変化が生まれ、デザイン性の高いユニフォームに仕上がります。現場での識別性も向上します。</p>'
-                }
-            ];
-
-            for (let advice of advices) {
-                if (advice.condition()) {
-                    document.getElementById('adviceContent').innerHTML = advice.text;
-                    break;
-                }
-            }
-        }
-
-        // カラー名を取得
-        function getColorName(partId) {
-            const colorData = state.partColors[partId];
-            if (!colorData) return null;
-
-            if (typeof colorData === 'string') {
-                const color = colors.find(c => c.id === colorData);
-                return color ? color.name : null;
-            } else if (typeof colorData === 'object' && colorData.custom) {
-                return 'カスタム';
-            }
-            return null;
-        }
 
         // 添付画像更新
         function updateAttachedImages() {
